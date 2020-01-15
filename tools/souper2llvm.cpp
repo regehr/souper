@@ -57,10 +57,9 @@ static std::map<Inst *, Value *> GetArgsMapping(const InstContext &IC,
 /// If there are no errors, the function returns false. If an error is found,
 /// a message describing the error is written to OS (if non-null) and true is
 /// returned.
-bool generateIR() {
-  llvm::LLVMContext Context;
-  llvm::Module Module("souper.ll", Context);
-
+bool generateIR(InstContext &IC, const ParsedReplacement &RepRHS,
+                llvm::Module &Module) {
+  llvm::LLVMContext &Context = Module.getContext();
   const std::vector<llvm::Type *> ArgTypes = GetInputArgumentTypes(IC, Context);
   const auto FT = llvm::FunctionType::get(
       /*Result=*/Codegen::GetInstReturnType(Context, RepRHS.Mapping.RHS),
@@ -102,7 +101,10 @@ int Work(const MemoryBufferRef &MB) {
     return 1;
   }
 
-  generateIR();
+  llvm::LLVMContext Context;
+  llvm::Module Module("souper.ll", Context);
+  if (generateIR(IC, RepRHS, Module))
+    return 1;
 
   std::error_code EC;
   llvm::raw_fd_ostream OS(OutputFilename, EC);
