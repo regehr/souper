@@ -54,19 +54,10 @@ static std::map<Inst *, Value *> GetArgsMapping(const InstContext &IC,
   return Args;
 };
 
-int Work(const MemoryBufferRef &MB) {
-  InstContext IC;
-  ReplacementContext RC;
-  std::string ErrStr;
-
-  const ParsedReplacement &RepRHS = ParseReplacementRHS(
-      IC, MB.getBufferIdentifier(), MB.getBuffer(), RC, ErrStr);
-
-  if (!ErrStr.empty()) {
-    llvm::errs() << ErrStr << '\n';
-    return 1;
-  }
-
+/// If there are no errors, the function returns false. If an error is found,
+/// a message describing the error is written to OS (if non-null) and true is
+/// returned.
+bool generateIR() {
   llvm::LLVMContext Context;
   llvm::Module Module("souper.ll", Context);
 
@@ -92,9 +83,26 @@ int Work(const MemoryBufferRef &MB) {
 
   // Validate the generated code, checking for consistency.
   if (verifyFunction(*F, &llvm::errs()))
-    return 1;
+    return true;
   if (verifyModule(Module, &llvm::errs()))
+    return true;
+  return false;
+}
+
+int Work(const MemoryBufferRef &MB) {
+  InstContext IC;
+  ReplacementContext RC;
+  std::string ErrStr;
+
+  const ParsedReplacement &RepRHS = ParseReplacementRHS(
+      IC, MB.getBufferIdentifier(), MB.getBuffer(), RC, ErrStr);
+
+  if (!ErrStr.empty()) {
+    llvm::errs() << ErrStr << '\n';
     return 1;
+  }
+
+  generateIR();
 
   std::error_code EC;
   llvm::raw_fd_ostream OS(OutputFilename, EC);
