@@ -302,4 +302,61 @@ llvm::Value *Codegen::getValue(Inst *I) {
                      Inst::getKindName(I->K) + " in Codegen::getValue()");
 }
 
+static std::vector<llvm::Type *>
+GetInputArgumentTypes(const InstContext &IC, llvm::LLVMContext &Context) {
+  const std::vector<Inst *> AllVariables = IC.getVariables();
+
+  std::vector<llvm::Type *> ArgTypes;
+  ArgTypes.reserve(AllVariables.size());
+  for (const Inst *const Var : AllVariables)
+    ArgTypes.emplace_back(Type::getIntNTy(Context, Var->Width));
+
+  return ArgTypes;
+}
+
+static std::map<Inst *, Value *> GetArgsMapping(const InstContext &IC,
+                                                Function *F) {
+  std::map<Inst *, Value *> Args;
+
+  const std::vector<Inst *> AllVariables = IC.getVariables();
+  for (auto zz : llvm::zip(AllVariables, F->args()))
+    Args[std::get<0>(zz)] = &(std::get<1>(zz));
+
+  return Args;
+};
+
+/// If there are no errors, the function returns false. If an error is found,
+/// a message describing the error is written to OS (if non-null) and true is
+/// returned.
+bool genModule(InstContext &IC, const souper::ParsedReplacement &RepRHS,
+               llvm::Module &Module) {
+  llvm::LLVMContext &Context = Module.getContext();
+  const std::vector<llvm::Type *> ArgTypes = GetInputArgumentTypes(IC, Context);
+  const auto FT = llvm::FunctionType::get(
+      /*Result=*/Codegen::GetInstReturnType(Context, RepRHS.Mapping.RHS),
+      /*Params=*/ArgTypes, /*isVarArg=*/false);
+
+  Function *F = Function::Create(FT, Function::ExternalLinkage, "fun", &Module);
+
+  const std::map<Inst *, Value *> Args = GetArgsMapping(IC, F);
+
+  BasicBlock *BB = BasicBlock::Create(Context, "entry", F);
+
+  llvm::IRBuilder<> Builder(Context);
+  Builder.SetInsertPoint(BB);
+
+  Value *RetVal = Codegen(Context, &Module, Builder, /*DT*/ nullptr,
+                          /*ReplacedInst*/ nullptr, Args)
+                      .getValue(RepRHS.Mapping.RHS);
+
+  Builder.CreateRet(RetVal);
+
+  // Validate the generated code, checking for consistency.
+  if (verifyFunction(*F, &llvm::errs()))
+    return true;
+  if (verifyModule(Module, &llvm::errs()))
+    return true;
+  return false;
+}
+
 } // namespace souper

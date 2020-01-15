@@ -16,12 +16,17 @@
 #define SOUPER_CODEGEN_CODEGEN_H
 
 #include "souper/Inst/Inst.h"
+#include "souper/Parser/Parser.h"
 #include "llvm/IR/Dominators.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Value.h"
+#include "llvm/IR/Verifier.h"
 #include <map>
+
+#include "llvm/Support/MemoryBuffer.h"
+
 
 namespace souper {
 
@@ -46,6 +51,12 @@ public:
 
   llvm::Value *getValue(Inst *I);
 };
+
+/// If there are no errors, the function returns false. If an error is found,
+/// a message describing the error is written to OS (if non-null) and true is
+/// returned.
+bool genModule(InstContext &IC, const ParsedReplacement &RepRHS,
+               llvm::Module &Module);
 
 } // namespace souper
 
