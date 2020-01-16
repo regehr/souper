@@ -797,6 +797,7 @@ EnumerativeSynthesis::synthesize(SMTLIBSolver *SMTSolver,
     llvm::errs() << "got " << Cands.size() << " candidates from LHS\n";
 
   int LHSCost = souper::cost(SC.LHS, /*IgnoreDepsWithExternalUses=*/true);
+  int LHSActualCost = souper::actualCost(SC.LHS, /*IgnoreDepsWithExternalUses=*/true);
 
   int TooExpensive = 0;
 
@@ -815,7 +816,6 @@ EnumerativeSynthesis::synthesize(SMTLIBSolver *SMTSolver,
     PruneFuncs.push_back(DataflowPruning.getPruneFunc());
   }
   auto PruneCallback = MkPruneFunc(PruneFuncs);
-
 
   std::vector<Inst *> Guesses;
   uint64_t GuessCount = 0;
