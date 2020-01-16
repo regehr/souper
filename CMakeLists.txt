@@ -37,6 +37,12 @@ execute_process(
 )
 
 execute_process(
+  COMMAND ${LLVM_CONFIG_EXECUTABLE} --libdir
+  OUTPUT_VARIABLE LLVM_LIBDIR
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+execute_process(
   COMMAND ${LLVM_CONFIG_EXECUTABLE} --system-libs
   OUTPUT_VARIABLE LLVM_SYSTEM_LIBS
   OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -364,7 +370,7 @@ target_link_libraries(souperSMTLIB2 ${LLVM_LIBS} ${LLVM_LDFLAGS})
 target_link_libraries(souperTool souperExtractor souperSMTLIB2)
 
 # dynamic
-target_link_libraries(souperCodegen ${PASS_LDFLAGS})
+target_link_libraries(souperCodegen ${PASS_LDFLAGS} ${LLVM_LDFLAGS} ${LLVM_LIBS})
 target_link_libraries(souperPass souperCodegen ${PASS_LDFLAGS} ${HIREDIS_LIBRARY} ${ALIVE_LIBRARY} z3)
 target_link_libraries(souperPassProfileAll souperCodegen ${PASS_LDFLAGS} ${HIREDIS_LIBRARY} ${ALIVE_LIBRARY} z3)
 
