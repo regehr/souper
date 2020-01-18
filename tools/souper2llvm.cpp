@@ -43,7 +43,7 @@ int Work(const MemoryBufferRef &MB) {
 
   llvm::LLVMContext Context;
   llvm::Module Module("souper.ll", Context);
-  if (genModule(IC, RepRHS, Module))
+  if (genModule(IC, RepRHS.Mapping.RHS, Module))
     return 1;
 
   std::error_code EC;
