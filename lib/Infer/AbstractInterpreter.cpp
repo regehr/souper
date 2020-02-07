@@ -384,11 +384,30 @@ namespace souper {
   }
 
   bool isConcrete(Inst *I, bool ConsiderConsts, bool ConsiderHoles) {
-    return !hasGivenInst(I, [ConsiderConsts, ConsiderHoles](Inst *instr) {
-        return
-          (ConsiderConsts && isReservedConst(instr)) ||
-          (ConsiderHoles && isHole(instr));
+    std::vector<Inst *> Insts;
+    if (I->nReservedConsts == -1) {
+      Insts.clear();
+      findInsts(I, Insts, [](Inst *instr) {
+        return isReservedConst(instr);
       });
+      I->nReservedConsts = Insts.size();
+    }
+
+    if (I->nHoles == -1) {
+      Insts.clear();
+      findInsts(I, Insts, [](Inst *instr) {
+        return isHole(instr);
+      });
+      I->nHoles = Insts.size();
+    }
+
+    bool retval = true;
+    if (ConsiderConsts)
+      retval &= I->nReservedConsts == 0;
+    if (ConsiderHoles)
+      retval &= I->nHoles == 0;
+
+    return retval;
   }
 
   // Tries to get the concrete value from @I
@@ -686,30 +705,34 @@ namespace souper {
       }
       break;
     }
-//   case ExtractValue:
-//     return "extractvalue";
-//   case SAddWithOverflow:
-//     return "sadd.with.overflow";
-//   case UAddWithOverflow:
-//     return "uadd.with.overflow";
-//   case SSubWithOverflow:
-//     return "ssub.with.overflow";
-//   case USubWithOverflow:
-//     return "usub.with.overflow";
-//   case SMulWithOverflow:
-//     return "smul.with.overflow";
-//   case UMulWithOverflow:
-//     return "umul.with.overflow";
+    case souper::Inst::ExtractValue: {
+      if (I->Ops[1]->Val == 0) {
+        auto IOld = I;
+        I = I->Ops[0]->Ops[0];
+        switch (IOld->Ops[0]->K) {
+          case souper::Inst::SAddWithOverflow:
+          case souper::Inst::UAddWithOverflow:
+            return BinaryTransferFunctionsKB::add(KB0, KB1);
+
+          case souper::Inst::SSubWithOverflow:
+          case souper::Inst::USubWithOverflow:
+            return BinaryTransferFunctionsKB::sub(KB0, KB1);
+
+          case souper::Inst::SMulWithOverflow:
+          case souper::Inst::UMulWithOverflow:
+            return BinaryTransferFunctionsKB::mul(KB0, KB1);
+          default:
+            llvm::report_fatal_error("Wrong operand in ExtractValue.");
+        }
+        I = IOld; // needed for caching
+      }
+      // returns TOP for the carry bit
+    }
+
 //   case ReservedConst:
 //     return "reservedconst";
 //   case ReservedInst:
 //     return "reservedinst";
-//   case SAddO:
-//   case UAddO:
-//   case SSubO:
-//   case USubO:
-//   case SMulO:
-//   case UMulO:
     default :
       break;
     }
@@ -789,7 +812,7 @@ namespace souper {
     case Inst::AddNSW: {
       auto V1 = VAL(I->Ops[1]);
       if (V1.hasValue()) {
-        Result = CR0.addWithNoSignedWrap(V1.getValue());
+        Result = CR0.addWithNoWrap(V1.getValue(), OverflowingBinaryOperator::NoSignedWrap);
       }
       break;
     }
@@ -858,6 +881,30 @@ namespace souper {
       //       return R0.sdiv(R1); // unimplemented
       //     }
       // TODO: Xor pattern for not, truncs and extends, etc
+    case souper::Inst::ExtractValue: {
+      if (I->Ops[1]->Val == 0) {
+        auto IOld = I;
+        I = I->Ops[0]->Ops[0];
+        switch (IOld->Ops[0]->K) {
+          case souper::Inst::SAddWithOverflow:
+          case souper::Inst::UAddWithOverflow:
+            return CR0.add(CR1);
+
+          case souper::Inst::SSubWithOverflow:
+          case souper::Inst::USubWithOverflow:
+            return CR0.sub(CR1);
+
+          case souper::Inst::SMulWithOverflow:
+          case souper::Inst::UMulWithOverflow:
+            return CR0.multiply(CR1);
+          default:
+            llvm::errs() << Inst::getKindName(I->Ops[0]->K) << "\n";
+            llvm::report_fatal_error("Wrong operand in ExtractValue.");
+        }
+        I = IOld; // needed for caching
+      }
+      // returns TOP for the carry bit
+    }
     default:
       break;
     }

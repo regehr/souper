@@ -26,7 +26,9 @@
 #include "llvm/IR/IntrinsicInst.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Module.h"
+#include "llvm/InitializePasses.h"
 #include "llvm/Pass.h"
+#include "llvm/PassSupport.h"
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/IR/Module.h"
 #include "llvm/Support/raw_ostream.h"
@@ -206,7 +208,7 @@ public:
     ScalarEvolution *SE = &getAnalysis<ScalarEvolutionWrapperPass>(*F).getSE();
     if (!SE)
       report_fatal_error("getSE() failed");
-    TargetLibraryInfo* TLI = &getAnalysis<TargetLibraryInfoWrapperPass>().getTLI();
+    TargetLibraryInfo* TLI = &getAnalysis<TargetLibraryInfoWrapperPass>().getTLI(*F);
     if (!TLI)
       report_fatal_error("getTLI() failed");
     FunctionCandidateSet CS = ExtractCandidatesFromPass(F, LI, DB, LVI, SE, TLI, IC, EBC);
@@ -258,9 +260,10 @@ public:
         Changed = true;
         continue;
       }
+      std::vector<Inst *> RHSs;
       if (std::error_code EC =
           S->infer(Cand.BPCs, Cand.PCs, Cand.Mapping.LHS,
-                   Cand.Mapping.RHS, IC)) {
+                   RHSs, /*AllowMultipleRHSs=*/false, IC)) {
         if (EC == std::errc::timed_out ||
             EC == std::errc::value_too_large) {
           continue;
@@ -268,8 +271,10 @@ public:
           report_fatal_error("Unable to query solver: " + EC.message() + "\n");
         }
       }
-      if (!Cand.Mapping.RHS)
+      if (RHSs.empty())
         continue;
+
+      Cand.Mapping.RHS = RHSs.front();
 
       Instruction *I = Cand.Origin;
       assert(Cand.Mapping.LHS->hasOrigin(I));

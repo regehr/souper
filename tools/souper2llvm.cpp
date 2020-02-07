@@ -14,6 +14,10 @@
 
 #include "souper/Codegen/Codegen.h"
 #include "souper/Parser/Parser.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Verifier.h"
+#include "llvm/Support/CommandLine.h"
 #include "llvm/Support/MemoryBuffer.h"
 
 using namespace llvm;
