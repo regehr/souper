@@ -959,8 +959,8 @@ int souper::cost(Inst *I, bool IgnoreDepsWithExternalUses) {
   return costHelper(I, I, Visited, IgnoreDepsWithExternalUses);
 }
 
-int souper::actualCost(Inst *I, bool IgnoreDepsWithExternalUses) {
-  
+int souper::backendCost(Inst *I, bool IgnoreDepsWithExternalUses) {
+  return 0;
 }
 
 int souper::countHelper(Inst *I, std::set<Inst *> &Visited) {

@@ -849,7 +849,7 @@ EnumerativeSynthesis::synthesize(SMTLIBSolver *SMTSolver,
     llvm::errs() << "got " << Cands.size() << " candidates from LHS\n";
 
   int LHSCost = souper::cost(SC.LHS, /*IgnoreDepsWithExternalUses=*/true);
-  int LHSActualCost = souper::actualCost(SC.LHS, /*IgnoreDepsWithExternalUses=*/true);
+  int LHSBackendCost = souper::backendCost(SC.LHS, /*IgnoreDepsWithExternalUses=*/true);
 
   int TooExpensive = 0;
 
