@@ -246,6 +246,15 @@ add_library(souperTool STATIC
   ${SOUPER_TOOL_FILES}
 )
 
+set(SOUPER_CODEGEN_FILES
+  lib/Codegen/Codegen.cpp
+  include/souper/Codegen/Codegen.h
+)
+
+add_library(souperCodegen STATIC
+  ${SOUPER_CODEGEN_FILES}
+)
+
 set(SOUPER_SOURCES
   ${SOUPER_EXTRACTOR_FILES}
   ${SOUPER_INST_FILES}
@@ -253,12 +262,8 @@ set(SOUPER_SOURCES
   ${SOUPER_PARSER_FILES}
   ${SOUPER_SMTLIB2_FILES}
   ${SOUPER_TOOL_FILES}
-  ${SOUPER_INFER_FILES})
-
-set(SOUPER_CODEGEN_FILES
-  lib/Codegen/Codegen.cpp
-  include/souper/Codegen/Codegen.h
-)
+  ${SOUPER_INFER_FILES}
+  ${SOUPER_CODEGEN_FILES})
 
 add_library(souperPass SHARED
   ${KLEE_EXPR_FILES}
@@ -270,10 +275,6 @@ add_library(souperPassProfileAll SHARED
   ${KLEE_EXPR_FILES}
   ${SOUPER_SOURCES}
   lib/Pass/Pass.cpp
-)
-
-add_library(souperCodegen SHARED
-  ${SOUPER_CODEGEN_FILES}
 )
 
 target_compile_definitions(souperPassProfileAll PRIVATE DYNAMIC_PROFILE_ALL=1)
@@ -362,9 +363,9 @@ target_link_libraries(souperKVStore ${HIREDIS_LIBRARY} ${LLVM_LIBS} ${LLVM_LDFLA
 target_link_libraries(souperParser souperInst ${LLVM_LIBS} ${LLVM_LDFLAGS} ${ALIVE_LIBRARY})
 target_link_libraries(souperSMTLIB2 ${LLVM_LIBS} ${LLVM_LDFLAGS})
 target_link_libraries(souperTool souperExtractor souperSMTLIB2)
+target_link_libraries(souperCodegen ${LLVM_LIBS} ${LLVM_LDFLAGS})
 
 # dynamic
-target_link_libraries(souperCodegen ${PASS_LDFLAGS})
 target_link_libraries(souperPass souperCodegen ${PASS_LDFLAGS} ${HIREDIS_LIBRARY} ${ALIVE_LIBRARY} z3)
 target_link_libraries(souperPassProfileAll souperCodegen ${PASS_LDFLAGS} ${HIREDIS_LIBRARY} ${ALIVE_LIBRARY} z3)
 
