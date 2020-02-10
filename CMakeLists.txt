@@ -366,8 +366,8 @@ target_link_libraries(souperTool souperExtractor souperSMTLIB2)
 target_link_libraries(souperCodegen ${LLVM_LIBS} ${LLVM_LDFLAGS})
 
 # dynamic
-target_link_libraries(souperPass souperCodegen ${PASS_LDFLAGS} ${HIREDIS_LIBRARY} ${ALIVE_LIBRARY} z3)
-target_link_libraries(souperPassProfileAll souperCodegen ${PASS_LDFLAGS} ${HIREDIS_LIBRARY} ${ALIVE_LIBRARY} z3)
+target_link_libraries(souperPass ${PASS_LDFLAGS} ${HIREDIS_LIBRARY} ${ALIVE_LIBRARY} z3)
+target_link_libraries(souperPassProfileAll ${PASS_LDFLAGS} ${HIREDIS_LIBRARY} ${ALIVE_LIBRARY} z3)
 
 # executables
 target_link_libraries(souper souperExtractor souperKVStore souperParser souperSMTLIB2 souperTool kleeExpr ${HIREDIS_LIBRARY} ${ALIVE_LIBRARY} z3)
