@@ -51,13 +51,24 @@ void optimizeModule(llvm::Module &M) {
   MPM.run(M, MAM);
 }
 
+struct Target {
+  std::string Trip, CPU;
+};
+
+std::vector<Target> Targets {
+  { "x86_64", "skylake" },
+  { "aarch64", "apple-a12" },
+};
+
 void getBackendCost(InstContext &IC, souper::Inst *I, BackendCost &BC) {
-  llvm::LLVMContext Context;
-  llvm::Module M("souper.ll", Context);
+  llvm::LLVMContext C;
+  llvm::Module M("souper.ll", C);
   if (genModule(IC, I, M))
     llvm::report_fatal_error("codegen error in getBackendCost()");
   optimizeModule(M);
-  llvm::report_fatal_error("hello");
+
+  for (auto T : Targets) {
+  }
 }
  
 } // namespace souper
