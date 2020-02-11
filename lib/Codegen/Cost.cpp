@@ -57,6 +57,7 @@ void getBackendCost(InstContext &IC, souper::Inst *I, BackendCost &BC) {
   if (genModule(IC, I, M))
     llvm::report_fatal_error("codegen error in getBackendCost()");
   optimizeModule(M);
+  llvm::report_fatal_error("hello");
 }
  
 } // namespace souper
