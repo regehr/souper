@@ -488,6 +488,7 @@ public:
     for (auto &RHS : RHSs) {
       BackendCost BC;
       getBackendCost(IC, RHS, BC);
+      // FIXME sort the list
     }
 
     return EC;

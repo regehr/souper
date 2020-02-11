@@ -360,7 +360,4 @@ bool genModule(InstContext &IC, souper::Inst *I, llvm::Module &Module) {
   return false;
 }
 
-void getBackendCost(InstContext &IC, souper::Inst *I, BackendCost &BC) {
-}
- 
 } // namespace souper
