@@ -57,6 +57,12 @@ public:
 /// returned.
 bool genModule(InstContext &IC, souper::Inst *I, llvm::Module &Module);
 
+struct BackendCost {
+  std::vector<int> C;
+};
+
+void getBackendCost(InstContext &IC, souper::Inst *I, BackendCost &BC);
+ 
 } // namespace souper
 
 #endif // SOUPER_CODEGEN_CODEGEN_H

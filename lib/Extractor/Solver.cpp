@@ -21,6 +21,7 @@
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/KnownBits.h"
+#include "souper/Codegen/Codegen.h"
 #include "souper/Extractor/Solver.h"
 #include "souper/Infer/AliveDriver.h"
 #include "souper/Infer/ConstantSynthesis.h"
@@ -485,6 +486,8 @@ public:
       return EC;
 
     for (auto &RHS : RHSs) {
+      BackendCost BC;
+      getBackendCost(IC, RHS, BC);
     }
 
     return EC;
