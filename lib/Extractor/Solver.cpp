@@ -481,6 +481,12 @@ public:
                         Inst *LHS, std::vector<Inst *> &RHSs,
                         bool AllowMultipleRHSs, InstContext &IC) override {
     auto EC = inferHelper(BPCs, PCs, LHS, RHSs, AllowMultipleRHSs, IC);
+    if (RHSs.size() <= 1)
+      return EC;
+
+    for (auto &RHS : RHSs) {
+    }
+
     return EC;
   }
 
