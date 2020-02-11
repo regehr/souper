@@ -66,8 +66,20 @@ std::vector<TargetInfo> Targets {
 
 // FIXME
 using namespace llvm;
+
+bool Init = false;
   
 void getBackendCost(InstContext &IC, souper::Inst *I, BackendCost &BC) {
+
+  if (!Init) {
+    InitializeAllTargetInfos();
+    InitializeAllTargets();
+    InitializeAllTargetMCs();
+    InitializeAllAsmParsers();
+    InitializeAllAsmPrinters();
+    Init = true;
+  }
+
   llvm::LLVMContext C;
   llvm::Module M("souper.ll", C);
   if (genModule(IC, I, M))
