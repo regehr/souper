@@ -120,6 +120,8 @@ void getBackendCost(InstContext &IC, souper::Inst *I, BackendCost &BC) {
 
   optimizeModule(M);
 
+  llvm::errs() << M;
+  
   BackendCost Cost;
   for (auto &T : Targets) {
     std::string Error;
