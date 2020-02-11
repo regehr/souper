@@ -22,6 +22,10 @@
 #include "llvm/IR/PassManager.h"
 #include "llvm/IR/Value.h"
 #include "llvm/Passes/PassBuilder.h"
+#include "llvm/Support/TargetRegistry.h"
+#include "llvm/Support/TargetSelect.h"
+#include "llvm/Target/TargetMachine.h"
+#include "llvm/Target/TargetOptions.h"
 #include <map>
 
 #define DEBUG_TYPE "souper"
@@ -51,15 +55,18 @@ void optimizeModule(llvm::Module &M) {
   MPM.run(M, MAM);
 }
 
-struct Target {
+struct TargetInfo {
   std::string Trip, CPU;
 };
 
-std::vector<Target> Targets {
+std::vector<TargetInfo> Targets {
   { "x86_64", "skylake" },
   { "aarch64", "apple-a12" },
 };
 
+// FIXME
+using namespace llvm;
+  
 void getBackendCost(InstContext &IC, souper::Inst *I, BackendCost &BC) {
   llvm::LLVMContext C;
   llvm::Module M("souper.ll", C);
@@ -68,11 +75,17 @@ void getBackendCost(InstContext &IC, souper::Inst *I, BackendCost &BC) {
   optimizeModule(M);
 
   for (auto &T : Targets) {
-  auto CPU = "generic";
-  auto Features = "";
-  TargetOptions Opt;
-  auto RM = Optional<Reloc::Model>();
-  auto TM = Target->createTargetMachine(Trip, CPU, Features, Opt, RM);
+    std::string Error;
+    auto Target = TargetRegistry::lookupTarget(T.Trip, Error);
+    if (!Target) {
+      errs() << Error;
+      report_fatal_error("can't lookup target");
+    }
+
+    auto Features = "";
+    TargetOptions Opt;
+    auto RM = Optional<Reloc::Model>();
+    auto TM = Target->createTargetMachine(T.Trip, T.CPU, Features, Opt, RM);
 
     
   }
