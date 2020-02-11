@@ -650,9 +650,9 @@ std::error_code synthesizeWithAlive(SynthesisContext &SC, std::vector<Inst *> &R
     }
     assert (RHS);
     RHSs.emplace_back(RHS);
-    if (!SC.CheckAllGuesses) {
+    if (!SC.CheckAllGuesses)
       return EC;
-    }
+
     if (DebugLevel > 3) {
       llvm::outs() << "; result " << RHSs.size() << ":\n";
       ReplacementContext RC;
@@ -790,9 +790,9 @@ std::error_code synthesizeWithKLEE(SynthesisContext &SC, std::vector<Inst *> &RH
 
     assert(RHS);
     RHSs.emplace_back(RHS);
-    if (!SC.CheckAllGuesses) {
+    if (!SC.CheckAllGuesses)
       return EC;
-    }
+
     if (DebugLevel > 3) {
       llvm::outs() << "; result " << RHSs.size() << ":\n";
       ReplacementContext RC;
@@ -849,7 +849,6 @@ EnumerativeSynthesis::synthesize(SMTLIBSolver *SMTSolver,
     llvm::errs() << "got " << Cands.size() << " candidates from LHS\n";
 
   int LHSCost = souper::cost(SC.LHS, /*IgnoreDepsWithExternalUses=*/true);
-  int LHSBackendCost = souper::backendCost(SC.LHS, /*IgnoreDepsWithExternalUses=*/true);
 
   int TooExpensive = 0;
 

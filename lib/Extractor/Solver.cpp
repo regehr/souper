@@ -373,10 +373,10 @@ public:
     return std::error_code();
   }
 
-  std::error_code infer(const BlockPCs &BPCs,
-                        const std::vector<InstMapping> &PCs,
-                        Inst *LHS, std::vector<Inst *> &RHSs,
-                        bool AllowMultipleRHSs, InstContext &IC) override {
+  std::error_code inferHelper(const BlockPCs &BPCs,
+                              const std::vector<InstMapping> &PCs,
+                              Inst *LHS, std::vector<Inst *> &RHSs,
+                              bool AllowMultipleRHSs, InstContext &IC) {
     std::error_code EC;
 
     /*
@@ -473,6 +473,14 @@ public:
     }
 
     RHSs.clear();
+    return EC;
+  }
+
+  std::error_code infer(const BlockPCs &BPCs,
+                        const std::vector<InstMapping> &PCs,
+                        Inst *LHS, std::vector<Inst *> &RHSs,
+                        bool AllowMultipleRHSs, InstContext &IC) override {
+    auto EC = inferHelper(BPCs, PCs, LHS, RHSs, AllowMultipleRHSs, IC);
     return EC;
   }
 
