@@ -67,7 +67,14 @@ void getBackendCost(InstContext &IC, souper::Inst *I, BackendCost &BC) {
     llvm::report_fatal_error("codegen error in getBackendCost()");
   optimizeModule(M);
 
-  for (auto T : Targets) {
+  for (auto &T : Targets) {
+  auto CPU = "generic";
+  auto Features = "";
+  TargetOptions Opt;
+  auto RM = Optional<Reloc::Model>();
+  auto TM = Target->createTargetMachine(Trip, CPU, Features, Opt, RM);
+
+    
   }
 }
  
