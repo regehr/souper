@@ -17,11 +17,14 @@
 #include "llvm/ADT/Statistic.h"
 #include "llvm/IR/Dominators.h"
 #include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LegacyPassManager.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/PassManager.h"
 #include "llvm/IR/Value.h"
+#include "llvm/Object/ObjectFile.h"
 #include "llvm/Passes/PassBuilder.h"
+#include "llvm/Support/SmallVectorMemoryBuffer.h"
 #include "llvm/Support/TargetRegistry.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Target/TargetMachine.h"
@@ -55,6 +58,35 @@ void optimizeModule(llvm::Module &M) {
   MPM.run(M, MAM);
 }
 
+long getCodeSize(Module &M, TargetMachine *TM) {
+  M.setDataLayout(TM->createDataLayout());
+  SmallVector<char, 256> DotO;
+  raw_svector_ostream dest(DotO);
+
+  legacy::PassManager pass;
+  if (TM->addPassesToEmitFile(pass, dest, nullptr, CGFT_ObjectFile)) {
+    errs() << "Target machine can't emit a file of this type";
+    report_fatal_error("oops");
+  }
+  pass.run(M);
+
+  SmallVectorMemoryBuffer Buf(std::move(DotO));
+  auto ObjOrErr = object::ObjectFile::createObjectFile(Buf);
+  if (!ObjOrErr)
+    report_fatal_error("createObjectFile() failed");
+  object::ObjectFile *OF = ObjOrErr.get().get();  
+  auto SecList = OF->sections();
+  long Size = 0;
+  for (auto &S : SecList) {
+    if (S.isText())
+      Size += S.getSize();
+  }
+  if (Size > 0)
+    return Size;
+  else
+    report_fatal_error("no text segment found");
+}
+
 struct TargetInfo {
   std::string Trip, CPU;
 };
@@ -64,13 +96,14 @@ std::vector<TargetInfo> Targets {
   { "aarch64", "apple-a12" },
 };
 
-// FIXME
-using namespace llvm;
-
 bool Init = false;
   
 void getBackendCost(InstContext &IC, souper::Inst *I, BackendCost &BC) {
 
+  llvm::errs() << "hello!\n";
+  
+  // TODO is this better than just forcing all clients of this code to
+  // do the init themselves?
   if (!Init) {
     InitializeAllTargetInfos();
     InitializeAllTargets();
@@ -81,11 +114,13 @@ void getBackendCost(InstContext &IC, souper::Inst *I, BackendCost &BC) {
   }
 
   llvm::LLVMContext C;
-  llvm::Module M("souper.ll", C);
+  llvm::Module M("", C);
   if (genModule(IC, I, M))
     llvm::report_fatal_error("codegen error in getBackendCost()");
+
   optimizeModule(M);
 
+  BackendCost Cost;
   for (auto &T : Targets) {
     std::string Error;
     auto Target = TargetRegistry::lookupTarget(T.Trip, Error);
@@ -99,8 +134,13 @@ void getBackendCost(InstContext &IC, souper::Inst *I, BackendCost &BC) {
     auto RM = Optional<Reloc::Model>();
     auto TM = Target->createTargetMachine(T.Trip, T.CPU, Features, Opt, RM);
 
-    
+    Cost.C.push_back(getCodeSize(M, TM));
   }
+
+  for (auto I : Cost.C) {
+    llvm::errs() << I << " ";
+  }
+  llvm::errs() << "\n";
 }
  
 } // namespace souper
