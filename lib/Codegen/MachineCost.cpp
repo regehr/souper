@@ -99,9 +99,6 @@ std::vector<TargetInfo> Targets {
 bool Init = false;
   
 void getBackendCost(InstContext &IC, souper::Inst *I, BackendCost &BC) {
-
-  llvm::errs() << "hello!\n";
-  
   // TODO is this better than just forcing all clients of this code to
   // do the init themselves?
   if (!Init) {
@@ -139,10 +136,34 @@ void getBackendCost(InstContext &IC, souper::Inst *I, BackendCost &BC) {
     Cost.C.push_back(getCodeSize(M, TM));
   }
 
+  llvm::errs() << "cost vector: ";
   for (auto I : Cost.C) {
     llvm::errs() << I << " ";
   }
   llvm::errs() << "\n";
 }
- 
+
+int compare(int A, int B) {
+  if (A < B)
+    return 1;
+  if (A > B)
+    return -1;
+  return 0;
+}
+
+bool compareCosts(const BackendCost &C1, const BackendCost &C2) {
+  assert(C1.C.size() == C2.C.size());
+
+  int Count = 0;
+  for (int i = 0; i < C1.C.size(); ++i)
+    Count += compare(C1.C[i], C2.C[i]);
+  if (Count < 0)
+    return true;
+  if (Count > 0)
+    return false;
+  
+  // break ties using souper cost
+  // break final ties how? we want a canonical winner for all cases
+}
+
 } // namespace souper
