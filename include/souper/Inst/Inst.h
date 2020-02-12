@@ -268,6 +268,7 @@ public:
                 llvm::APInt DemandedBits, bool Available);
 
   std::vector<Inst *> getVariables() const;
+  std::vector<Inst *> getVariablesFor(Inst *Root) const;
 };
 
 struct SynthesisContext {

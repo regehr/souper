@@ -783,6 +783,21 @@ std::vector<Inst *> InstContext::getVariables() const {
   return AllVariables;
 };
 
+std::vector<Inst *> InstContext::getVariablesFor(Inst *I) const {
+  std::vector<Inst *> AllVariables;
+  findVars(I, AllVariables);
+
+  std::sort(AllVariables.begin(), AllVariables.end(),
+            [](const Inst *LHS, const Inst *RHS) {
+              if (LHS->Width == RHS->Width)
+                return LHS->Number < RHS->Number;
+              else
+                return LHS->Width < RHS->Width;
+            });
+
+  return AllVariables;
+};
+
 bool Inst::isCommutative(Inst::Kind K) {
   switch (K) {
   case Add:

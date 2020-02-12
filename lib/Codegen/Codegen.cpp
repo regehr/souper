@@ -305,24 +305,24 @@ llvm::Value *Codegen::getValue(Inst *I) {
 }
 
 static std::vector<llvm::Type *>
-GetInputArgumentTypes(const InstContext &IC, llvm::LLVMContext &Context, Inst *I) {
-  //const std::vector<Inst *> AllVariables = IC.getVariables();
-  std::vector<Inst *> AllVariables;
-  findVars(I, AllVariables);
+GetInputArgumentTypes(const InstContext &IC, llvm::LLVMContext &Context, Inst *Root) {
+  const std::vector<Inst *> AllVariables = IC.getVariablesFor(Root);
 
   std::vector<llvm::Type *> ArgTypes;
   ArgTypes.reserve(AllVariables.size());
-  for (const Inst *const Var : AllVariables)
+  for (const Inst *const Var : AllVariables) {
+    llvm::errs() << "arg with width " << Var->Width << " and number " << Var->Number << "\n";
     ArgTypes.emplace_back(Type::getIntNTy(Context, Var->Width));
+  }
 
   return ArgTypes;
 }
 
 static std::map<Inst *, Value *> GetArgsMapping(const InstContext &IC,
-                                                Function *F) {
+                                                Function *F, Inst *Root) {
   std::map<Inst *, Value *> Args;
 
-  const std::vector<Inst *> AllVariables = IC.getVariables();
+  const std::vector<Inst *> AllVariables = IC.getVariablesFor(Root);
   for (auto zz : llvm::zip(AllVariables, F->args()))
     Args[std::get<0>(zz)] = &(std::get<1>(zz));
 
@@ -341,7 +341,7 @@ bool genModule(InstContext &IC, souper::Inst *I, llvm::Module &Module) {
 
   Function *F = Function::Create(FT, Function::ExternalLinkage, "fun", &Module);
 
-  const std::map<Inst *, Value *> Args = GetArgsMapping(IC, F);
+  const std::map<Inst *, Value *> Args = GetArgsMapping(IC, F, I);
 
   BasicBlock *BB = BasicBlock::Create(Context, "entry", F);
 
