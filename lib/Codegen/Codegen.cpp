@@ -305,8 +305,10 @@ llvm::Value *Codegen::getValue(Inst *I) {
 }
 
 static std::vector<llvm::Type *>
-GetInputArgumentTypes(const InstContext &IC, llvm::LLVMContext &Context) {
-  const std::vector<Inst *> AllVariables = IC.getVariables();
+GetInputArgumentTypes(const InstContext &IC, llvm::LLVMContext &Context, Inst *I) {
+  //const std::vector<Inst *> AllVariables = IC.getVariables();
+  std::vector<Inst *> AllVariables;
+  findVars(I, AllVariables);
 
   std::vector<llvm::Type *> ArgTypes;
   ArgTypes.reserve(AllVariables.size());
@@ -332,7 +334,7 @@ static std::map<Inst *, Value *> GetArgsMapping(const InstContext &IC,
 /// returned.
 bool genModule(InstContext &IC, souper::Inst *I, llvm::Module &Module) {
   llvm::LLVMContext &Context = Module.getContext();
-  const std::vector<llvm::Type *> ArgTypes = GetInputArgumentTypes(IC, Context);
+  const std::vector<llvm::Type *> ArgTypes = GetInputArgumentTypes(IC, Context, I);
   const auto FT = llvm::FunctionType::get(
       /*Result=*/Codegen::GetInstReturnType(Context, I),
       /*Params=*/ArgTypes, /*isVarArg=*/false);
