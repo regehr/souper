@@ -18,21 +18,23 @@
 
 using namespace souper;
 
-const BackendCost C1 { .C = { 1, 2, 3, 4, 5 }};
-const BackendCost C2 { .C = { 0, 0, 0, 0, 0 }};
-const BackendCost C3 { .C = { 1, 2, 3, 4, 4 }};
-const BackendCost C4 { .C = { 1, 2, 3, 4, 6 }};
+const BackendCost C5a { .C = { 1, 2, 3, 4, 5 }};
+const BackendCost C5b { .C = { 0, 0, 0, 0, 0 }};
+const BackendCost C5c { .C = { 1, 2, 3, 4, 4 }};
+const BackendCost C5d { .C = { 1, 2, 3, 4, 6 }};
 
 TEST(CodegenTest, Compare) {
   const struct {
     BackendCost L, R;
-    bool Result;
   } Tests[] = {
-    { C1, C2, false },
+    { C5b, C5a },
+    { C5b, C5c },
+    { C5b, C5d },
   };
   
   for (const auto &T : Tests) {
-    EXPECT_EQ(compareCosts(T.L, T.R), T.Result);
+    EXPECT_EQ(compareCosts(T.L, T.R), true);
+    EXPECT_EQ(compareCosts(T.R, T.L), false);
   }
 }
 
@@ -41,7 +43,7 @@ TEST(CodegenTest, Sort) {
     std::vector<BackendCost> Costs;
     BackendCost Best;
   } Tests[] = {
-    { { C1, C2, C3, C4 }, C2 },
+    { { C5a, C5b, C5c, C5d }, C5b },
   };
   
   for (const auto &T : Tests) {
