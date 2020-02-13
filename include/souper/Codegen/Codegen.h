@@ -63,6 +63,8 @@ struct BackendCost {
 
 void getBackendCost(InstContext &IC, souper::Inst *I, BackendCost &BC);
  
+bool compareCosts(const BackendCost &C1, const BackendCost &C2);
+
 } // namespace souper
 
 #endif // SOUPER_CODEGEN_CODEGEN_H

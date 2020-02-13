@@ -349,7 +349,7 @@ foreach(target souperClangTool clang-souper)
   set_target_properties(${target} PROPERTIES COMPILE_FLAGS "${CLANG_CXXFLAGS} ${LLVM_CXXFLAGS}")
   target_include_directories(${target} PRIVATE "${LLVM_INCLUDEDIR}" ${CLANG_INCLUDEDIR})
 endforeach()
-foreach(target extractor_tests inst_tests parser_tests interpreter_tests)
+foreach(target extractor_tests inst_tests parser_tests interpreter_tests codegen_tests)
   set_target_properties(${target} PROPERTIES COMPILE_FLAGS "${GTEST_CXXFLAGS} ${LLVM_CXXFLAGS}")
   target_include_directories(${target} PRIVATE "${LLVM_INCLUDEDIR}" "${GTEST_INCLUDEDIR}")
 endforeach()
@@ -387,6 +387,7 @@ target_link_libraries(souper2llvm souperParser souperCodegen)
 target_link_libraries(extractor_tests souperExtractor souperParser ${GTEST_LIBS} ${ALIVE_LIBRARY})
 target_link_libraries(inst_tests souperInfer souperInst souperExtractor ${GTEST_LIBS} ${ALIVE_LIBRARY})
 target_link_libraries(parser_tests souperParser ${GTEST_LIBS} ${ALIVE_LIBRARY})
+target_link_libraries(codegen_tests souperCodegen souperInst ${GTEST_LIBS} ${ALIVE_LIBRARY})
 target_link_libraries(interpreter_tests souperInfer souperInst ${GTEST_LIBS} ${ALIVE_LIBRARY})
 
 SET(BUILD_CLANG_TOOL 1 CACHE BOOL "Build the Souper Clang tool")
@@ -415,7 +416,7 @@ configure_file(
 
 add_custom_target(check
   COMMAND ${CMAKE_BINARY_DIR}/run_lit
-  DEPENDS extractor_tests inst_tests parser-test parser_tests profileRuntime souper souper-check souper-interpret souper2llvm souperPass souperPassProfileAll count-insts interpreter_tests
+  DEPENDS extractor_tests inst_tests parser-test parser_tests codegen_tests profileRuntime souper souper-check souper-interpret souper2llvm souperPass souperPassProfileAll count-insts interpreter_tests
   USES_TERMINAL)
 
 find_program(GO_EXECUTABLE NAMES go DOC "go executable")

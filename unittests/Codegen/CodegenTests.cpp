@@ -18,15 +18,34 @@
 
 using namespace souper;
 
-TEST(ParserTest, Errors) {
-  struct {
+const BackendCost C1 { .C = { 1, 2, 3, 4, 5 }};
+const BackendCost C2 { .C = { 0, 0, 0, 0, 0 }};
+const BackendCost C3 { .C = { 1, 2, 3, 4, 4 }};
+const BackendCost C4 { .C = { 1, 2, 3, 4, 6 }};
+
+TEST(CodegenTest, Compare) {
+  const struct {
+    BackendCost L, R;
+    bool Result;
+  } Tests[] = {
+    { C1, C2, false },
+  };
+  
+  for (const auto &T : Tests) {
+    EXPECT_EQ(compareCosts(T.L, T.R), T.Result);
+  }
+}
+
+TEST(CodegenTest, Sort) {
+  const struct {
     std::vector<BackendCost> Costs;
     BackendCost Best;
-  } Tests[];
-
+  } Tests[] = {
+    { { C1, C2, C3, C4 }, C2 },
+  };
+  
   for (const auto &T : Tests) {
-    std::string ErrStr;
-    ParseReplacement(IC, "<input>", T.Test, ErrStr);
-    EXPECT_EQ(T.WantError, ErrStr);
+    //std::sort(T.Costs.begin(), T.Costs.end(), compareCosts);
+    //EXPECT_EQ(T.WantError, ErrStr);
   }
 }
