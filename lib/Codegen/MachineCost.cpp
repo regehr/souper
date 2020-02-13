@@ -145,12 +145,14 @@ void getBackendCost(InstContext &IC, souper::Inst *I, BackendCost &BC) {
 
 int compare(int A, int B) {
   if (A < B)
-    return 1;
-  if (A > B)
     return -1;
+  if (A > B)
+    return 1;
   return 0;
 }
 
+// "The value returned indicates whether the element passed as first
+// argument is considered to go before the second"
 bool compareCosts(const BackendCost &C1, const BackendCost &C2) {
   assert(C1.C.size() == C2.C.size());
 

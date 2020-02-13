@@ -328,6 +328,10 @@ add_executable(parser_tests
   unittests/Parser/ParserTests.cpp
 )
 
+add_executable(codegen_tests
+  unittests/Codegen/CodegenTests.cpp
+)
+
 add_executable(interpreter_tests
   unittests/Interpreter/InterpreterInfra.cpp
   unittests/Interpreter/InterpreterTests.cpp)
