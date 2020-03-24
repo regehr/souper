@@ -99,9 +99,6 @@ namespace {
   static cl::opt<bool> IgnoreCost("souper-enumerative-synthesis-ignore-cost",
     cl::desc("Ignore cost of RHSes -- just generate them. (default=false)"),
     cl::init(false));
-  static cl::opt<bool> SuppressFoldables("souper-suppress-foldable-operations",
-    cl::desc("Avoid synthesizing operations such as mul x, 1 that can be folded away (default=true)"),
-    cl::init(true));
   static cl::opt<unsigned> MaxLHSCands("souper-max-lhs-cands",
     cl::desc("Gather at most this many inputs from a LHS to use as synthesis inputs (default=8)"),
     cl::init(8));
@@ -155,8 +152,6 @@ void addGuess(Inst *RHS, unsigned TargetWidth, InstContext &IC, int MaxCost, std
       TooExpensive++;
   }
 }
-
-typedef std::function<bool(Inst *, std::vector<Inst *> &)> PruneFunc;
 
 // Does a short-circuiting AND operation
 PruneFunc MkPruneFunc(std::vector<PruneFunc> Funcs) {
@@ -780,7 +775,7 @@ std::error_code synthesizeWithKLEE(SynthesisContext &SC, std::vector<Inst *> &RH
 
       EC = CS.synthesize(SC.SMTSolver, SC.BPCs, SC.PCs, InstMapping (SC.LHS, I), ConstSet,
                          ResultConstMap, SC.IC, /*MaxTries=*/MaxTries, SC.Timeout,
-                         SuppressFoldables);
+                         /*AvoidNops=*/true);
       if (!ResultConstMap.empty()) {
         std::map<Inst *, Inst *> InstCache;
         std::map<Block *, Block *> BlockCache;
@@ -790,16 +785,28 @@ std::error_code synthesizeWithKLEE(SynthesisContext &SC, std::vector<Inst *> &RH
       }
     }
 
-    assert(RHS);
-    RHSs.emplace_back(RHS);
-    if (!SC.CheckAllGuesses)
-      return EC;
-
-    if (DebugLevel > 3) {
-      llvm::outs() << "; result " << RHSs.size() << ":\n";
-      ReplacementContext RC;
-      RC.printInst(RHS, llvm::outs(), true);
-      llvm::outs() << "\n";
+    if (DoubleCheckWithAlive) {
+      if (!isTransformationValid(SC.LHS, RHS, SC.PCs, SC.IC)) {
+        llvm::errs() << "Transformation proved wrong by alive.";
+        ReplacementContext RC;
+        RC.printInst(SC.LHS, llvm::errs(), /*printNames=*/true);
+        llvm::errs() << "=>";
+        ReplacementContext RC2;
+        RC2.printInst(RHS, llvm::errs(), /*printNames=*/true);
+        RHS = nullptr;
+      }
+    }
+    if (RHS) {
+      RHSs.emplace_back(RHS);
+      if (!SC.CheckAllGuesses) {
+        return EC;
+      }
+      if (DebugLevel > 3) {
+        llvm::outs() << "; result " << RHSs.size() << ":\n";
+        ReplacementContext RC;
+        RC.printInst(RHS, llvm::outs(), true);
+        llvm::outs() << "\n";
+      }
     }
   }
   return EC;
@@ -811,29 +818,8 @@ std::error_code verify(SynthesisContext &SC, std::vector<Inst *> &RHSs,
   if (SkipSolver || Guesses.empty())
     return EC;
 
-  if (UseAlive) {
-    return synthesizeWithAlive(SC, RHSs, Guesses);
-  } else {
-    auto Ret = synthesizeWithKLEE(SC, RHSs, Guesses);
-    if (DoubleCheckWithAlive && !Ret && !RHSs.empty()) {
-      for (auto RHS : RHSs) {
-        if (isTransformationValid(SC.LHS, RHS, SC.PCs, SC.IC)) {
-          continue;
-        } else {
-          llvm::errs() << "Transformation proved wrong by alive.";
-          ReplacementContext RC;
-          RC.printInst(SC.LHS, llvm::errs(), /*printNames=*/true);
-          llvm::errs() << "=>";
-          ReplacementContext RC2;
-          RC2.printInst(RHS, llvm::errs(), /*printNames=*/true);
-          RHS = nullptr;
-          std::error_code EC;
-          return EC;
-        }
-      }
-    }
-    return Ret;
-  }
+  return UseAlive ? synthesizeWithAlive(SC, RHSs, Guesses) :
+                    synthesizeWithKLEE(SC, RHSs, Guesses);
 }
 
 std::error_code
