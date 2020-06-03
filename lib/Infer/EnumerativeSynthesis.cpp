@@ -750,6 +750,7 @@ std::error_code synthesizeWithKLEE(SynthesisContext &SC, std::vector<Inst *> &RH
     // just see if we can replace every constant with zero
     if (!ResultConstMap.empty() && DoubleCheckWithAlive) {
       std::map <Inst *, llvm::APInt> ZeroConstMap = ResultConstMap;
+      Inst *newRHS;
       bool Changed = false;
       for (auto it : ZeroConstMap) {
         auto Inst = it.first;
@@ -759,7 +760,7 @@ std::error_code synthesizeWithKLEE(SynthesisContext &SC, std::vector<Inst *> &RH
         ZeroConstMap[Inst] = llvm::APInt::getMinValue(Inst->Width);
         std::map<Inst *, Inst *> InstCache;
         std::map<Block *, Block *> BlockCache;
-        auto newRHS = getInstCopy(I, SC.IC, InstCache, BlockCache, &ZeroConstMap, false);
+        newRHS = getInstCopy(I, SC.IC, InstCache, BlockCache, &ZeroConstMap, false);
         if (isTransformationValid(SC.LHS, newRHS, SC.PCs, SC.IC)) {
           Changed = true;
           llvm::outs() << "shrank a constant!\n";
