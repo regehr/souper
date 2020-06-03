@@ -749,15 +749,25 @@ std::error_code synthesizeWithKLEE(SynthesisContext &SC, std::vector<Inst *> &RH
     // FIXME shrink constants properly, this is a placeholder where we
     // just see if we can replace every constant with zero
     if (!ResultConstMap.empty() && DoubleCheckWithAlive) {
-      std::map <Inst *, llvm::APInt> ZeroConstMap;
-      for (auto it : ResultConstMap) {
-        auto I = it.first;
-        ZeroConstMap[I] = llvm::APInt(I->Width, 0);
+      std::map <Inst *, llvm::APInt> ZeroConstMap = ResultConstMap;
+      bool Changed = false;
+      for (auto it : ZeroConstMap) {
+        auto Inst = it.first;
+        auto C = it.second;
+        if (C.isMinValue())
+          continue;
+        ZeroConstMap[Inst] = llvm::APInt::getMinValue(Inst->Width);
+        std::map<Inst *, Inst *> InstCache;
+        std::map<Block *, Block *> BlockCache;
+        auto newRHS = getInstCopy(I, SC.IC, InstCache, BlockCache, &ZeroConstMap, false);
+        if (isTransformationValid(SC.LHS, newRHS, SC.PCs, SC.IC)) {
+          Changed = true;
+          llvm::outs() << "shrank a constant!\n";
+        } else {
+          ZeroConstMap[I] = C;
+        }
       }
-      std::map<Inst *, Inst *> InstCache;
-      std::map<Block *, Block *> BlockCache;
-      auto newRHS = getInstCopy(I, SC.IC, InstCache, BlockCache, &ZeroConstMap, false);
-      if (isTransformationValid(SC.LHS, newRHS, SC.PCs, SC.IC))
+      if (Changed)
         RHS = newRHS;
     }
     
