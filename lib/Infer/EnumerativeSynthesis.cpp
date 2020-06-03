@@ -753,11 +753,11 @@ std::error_code synthesizeWithKLEE(SynthesisContext &SC, std::vector<Inst *> &RH
       Inst *newRHS;
       bool Changed = false;
       for (auto it : ZeroConstMap) {
-        auto Inst = it.first;
+        auto I = it.first;
         auto C = it.second;
         if (C.isMinValue())
           continue;
-        ZeroConstMap[Inst] = llvm::APInt::getMinValue(Inst->Width);
+        ZeroConstMap[I] = llvm::APInt::getMinValue(I->Width);
         std::map<Inst *, Inst *> InstCache;
         std::map<Block *, Block *> BlockCache;
         newRHS = getInstCopy(I, SC.IC, InstCache, BlockCache, &ZeroConstMap, false);
