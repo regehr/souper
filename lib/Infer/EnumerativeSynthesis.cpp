@@ -757,13 +757,15 @@ std::error_code synthesizeWithKLEE(SynthesisContext &SC, std::vector<Inst *> &RH
         auto C = it.second;
         if (C.isMinValue())
           continue;
+        llvm::outs() << "trying to shrink constant of width " << I->Width << "\n";
         ZeroConstMap[I] = llvm::APInt::getMinValue(I->Width);
         std::map<Inst *, Inst *> InstCache;
         std::map<Block *, Block *> BlockCache;
         newRHS = getInstCopy(I, SC.IC, InstCache, BlockCache, &ZeroConstMap, false);
         if (isTransformationValid(SC.LHS, newRHS, SC.PCs, SC.IC)) {
           Changed = true;
-          llvm::outs() << "shrank a constant!\n";
+          llvm::outs() << "shrank a constant of width " << I->Width << " from " <<
+            C << " to zero\n";
         } else {
           ZeroConstMap[I] = C;
         }
