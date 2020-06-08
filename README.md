@@ -57,7 +57,7 @@ $ /path/to/clang -emit-llvm -c -o /path/to/file.bc /path/to/file.c
 
 For example:
 ```
-$ /path/to/souper -z3-path=/usr/bin/z3 /path/to/file.bc
+$ /path/to/souper /path/to/file.bc
 ```
 
 Souper will extract SMT queries from the bitcode file and pass them to
@@ -74,13 +74,13 @@ LLVM's regular peephole optimizations.
 For example:
 ```
 $ /path/to/clang -Xclang -load -Xclang /path/to/libsouperPass.so \
-                 -mllvm -z3-path=/usr/bin/z3 /path/to/file.c
+                 /path/to/file.c
 ```
 
 Or to run the pass on its own:
 ```
 $ /path/to/opt -load /path/to/libsouperPass.so -souper \
-               -z3-path=/usr/bin/z3 -o /path/to/file.opt.bc \
+               -o /path/to/file.opt.bc \
                /path/to/file.bc
 ```
 
@@ -98,7 +98,7 @@ server must be listening on the default port (6379).
 
 sclang uses external caching by default since this often gives a substantial
 speedup for large compilations. This behavior may be disabled by setting the
-SOUPER_NO_EXTERNAL_CACHE environment variable. Souper's Redis cache does not yet
+SOUPER_NO_EXTERNAL_CACHE environment variable. Souper's Redis cache does not
 have any support for versioning; you should stop Redis and delete its dump file
 any time Souper is upgraded.
 
