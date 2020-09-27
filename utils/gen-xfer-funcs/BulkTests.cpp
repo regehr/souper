@@ -55,7 +55,7 @@ const bool ARG1CONST = false;
 
 #if 1
 
-#define MAX_W 6
+#define MAX_W 5
 
 #else
 

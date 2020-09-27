@@ -14,6 +14,6 @@ for (my $i=0; $i<$N; $i++) {
 
 for (my $i=0; $i<$N; $i++) {
     chdir("work$i") or die;
-    system("nohup $NICE ../gen_xfer.pl run 2000 &");
+    system("nohup $NICE ../gen_xfer.pl run 1000 &");
     chdir("..") or die;
 }

@@ -16,7 +16,7 @@ my $TESTEXE = "\$HOME/souper-regehr/build/bulk_tests";
 my $GENBOOLS = 1;
 my $GENCONSTANTS = 1;
 
-my $ZERO = 0;
+my $ZERO = 1;
 
 my $RUN = 0;
 my $TESTONE = 0;
