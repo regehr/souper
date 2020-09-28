@@ -335,6 +335,12 @@ configure_file(
 )
 
 configure_file(
+  ${CMAKE_SOURCE_DIR}/utils/gen-xfer-funcs/kill_n.pl
+  ${CMAKE_BINARY_DIR}/utils/gen-xfer-funcs/kill_n.pl
+  @ONLY
+)
+
+configure_file(
   ${CMAKE_SOURCE_DIR}/utils/gen-xfer-funcs/gen_xfer.pl.in
   ${CMAKE_BINARY_DIR}/utils/gen-xfer-funcs/gen_xfer.pl
   @ONLY

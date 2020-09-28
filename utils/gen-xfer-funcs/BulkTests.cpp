@@ -53,7 +53,7 @@ const bool ARG1CONST = false;
 
 // TODO expose to command line
 
-#if 1
+#if 0
 
 #define MAX_W 5
 
@@ -61,27 +61,20 @@ const bool ARG1CONST = false;
 
 #define TESTONE 1
 #define MAX_W 6
-//#define VERBOSE 0
+#define VERBOSE 1
 
 #endif
 
 #ifdef TESTONE
 static KnownBits f(const KnownBits &x, const KnownBits &y) {
   const int WIDTH = x.One.getBitWidth();
-  const APInt t0 = operator+(y.One, x.One);
-  const APInt t1 = ~y.Zero;
-  const APInt t2 = -t1;
-  const APInt t3 = -x.Zero;
-  const APInt t4 = -t3;
-  const APInt t5 = ~t4;
-  const APInt t6 = operator-(t5, t2);
-  const APInt t7 = (APInt::getAllOnesValue(WIDTH).getBoolValue()) ? (t6) : (x.Zero);
-  const APInt t8 = operator&(t7, t0);
-  const APInt t9 = operator|(x.Zero, y.Zero);
-  const APInt t10 = operator&(t8, t9);
+  const APInt t0 = ~y.Zero;
+  const APInt t1 = operator-(x.Zero, t0);
+  const APInt t2 = operator&(y.Zero, t1);
+  const APInt t3 = operator&(x.Zero, t2);
   KnownBits ret(WIDTH);
-  ret.One = t10;
-  ret.Zero = APInt::getMinValue(WIDTH);
+  ret.Zero = t3;
+  ret.One = APInt::getMinValue(WIDTH);
   return ret;
 }
 #endif
