@@ -15,6 +15,9 @@ rest of Souper, please don't expect it to work or be at all useful.
 
 # TODO
 
+- optionally, record the highest width each xfer function is verified
+  to, and just don't call them for values wider than that
+
 - track precision of ones and zeroes separately
 
 - lots of fun special cases for funnel shifts:
