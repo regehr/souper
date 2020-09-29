@@ -37,10 +37,10 @@ namespace {
 //const auto K = Inst::And;
 //const auto K = Inst::Or;
 //const auto K = Inst::Xor;
-const auto K = Inst::Add;
+//const auto K = Inst::Add;
 //const auto K = Inst::Sub;
 //const auto K = Inst::Mul;
-//const auto K = Inst::URem;
+const auto K = Inst::URem;
 //const auto K = Inst::Shl;
 //const auto K = Inst::MulNW;
 //const auto K = Inst::UDiv;
@@ -60,20 +60,30 @@ const bool ARG1CONST = false;
 #else
 
 #define TESTONE 1
-#define MAX_W 6
-#define VERBOSE 1
+#define MAX_W 8
+//#define VERBOSE 1
 
 #endif
 
 #ifdef TESTONE
 static KnownBits f(const KnownBits &x, const KnownBits &y) {
   const int WIDTH = x.One.getBitWidth();
-  const APInt t0 = ~y.Zero;
-  const APInt t1 = operator-(x.Zero, t0);
-  const APInt t2 = operator&(y.Zero, t1);
-  const APInt t3 = operator&(x.Zero, t2);
+  const APInt t0 = (x.Zero.isNegative()) ? (x.Zero) : (y.Zero);
+  const APInt t1 = operator&(APInt::getSignedMinValue(WIDTH), t0);
+  const APInt t2 = operator&(t0, y.Zero);
+  APInt t3 = x.Zero;
+  t3.setBit((t2.countTrailingOnes() >= WIDTH) ? 0 : (t2.countTrailingOnes()));
+  const APInt t4 = ~y.One;
+  const APInt t5 = operator&(y.Zero, APInt::getSignedMaxValue(WIDTH));
+  const APInt t6 = t3.ashr((t5.countTrailingOnes() >= WIDTH) ? 0 : (t5.countTrailingOnes()));
+  APInt t7 = APInt::getSignedMinValue(WIDTH);
+  t7.setBitsFrom((t6.getNumSignBits() >= WIDTH) ? 0 : (t6.getNumSignBits()));
+  APInt t8 = t7;
+  t8.clearBit((APInt(WIDTH, 1).countPopulation() >= WIDTH) ? 0 : (APInt(WIDTH, 1).countPopulation()));
+  const APInt t9 = (t8.ult(t6)) ? (x.Zero) : (t4);
+  const APInt t10 = (t3.uge(t9)) ? (x.Zero) : (t1);
   KnownBits ret(WIDTH);
-  ret.Zero = t3;
+  ret.Zero = t10;
   ret.One = APInt::getMinValue(WIDTH);
   return ret;
 }
