@@ -7,13 +7,19 @@ rest of Souper, please don't expect it to work or be at all useful.
 
 - go to `$BUILDDIR/utils/gen-xfer-funcs`
 
+- make sure no working directories `work*` exist here
+
 - run `./run_n.pl N` where N is the number of cores you want to use;
   this will create a bunch of directories such as work0, work1, each
   containing the work done by one core
 
-- 
+- run `./look_n.pl` to get a summary of results
+
+- run `./kill_n.pl' to terminate the proceses
 
 # TODO
+
+- save the most precise xfer function at every operation count
 
 - optionally, record the highest width each xfer function is verified
   to, and just don't call them for values wider than that
