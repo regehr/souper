@@ -329,7 +329,8 @@ sub rand_choices($) {
 
 my @funcs;
 
-sub generate($$) {
+# generate APInt code
+sub generate1($$) {
     my $CPP;
     (my $cin, my $number) = @_;
     $choice_in = $cin;
@@ -342,6 +343,48 @@ sub generate($$) {
         push @avail_wide, @constants;
     }
     my $name = sprintf("f_%06d", $number);
+    push @funcs, $name;
+    $CPP .= "static KnownBits ${name}(const KnownBits &x, const KnownBits &y) {\n";
+    $CPP .= "  llvm::outs() << \"${name}\";\n" if $DEBUG;
+    $CPP .= "  const int WIDTH = x.One.getBitWidth();\n";
+    print "$choice_in\n" if $VERBOSE;
+    (my $e1, my $s1) = make_expr();
+    $empty = 0;
+    $CPP .= $s1;
+    print "$choice_in\n" if $VERBOSE;
+    (my $e2, my $s2) = make_expr();
+    $CPP .= $s2;
+    print "\n\n\n" if $VERBOSE;
+    $CPP .= "  KnownBits ret(WIDTH);\n";
+
+    if ($ZERO) {
+	$CPP .= "  ret.Zero = $e1;\n";
+	$CPP .= "  ret.One = APInt::getMinValue(WIDTH);\n";
+    } else {
+	$CPP .= "  ret.One = $e1;\n";
+	$CPP .= "  ret.Zero = APInt::getMinValue(WIDTH);\n";
+    }
+    #$CPP .= "  ret.One = $e2 & ~$e1;\n";
+
+    $CPP .= "  return ret;\n";
+    $CPP .= "}\n//  in: ${choice_orig}\n// out: ${choice_out}\n\n";
+    return $CPP;
+}
+
+# generate Z3 code
+sub generate2($$) {
+    my $CPP;
+    (my $cin, my $number) = @_;
+    $choice_in = $cin;
+    my $choice_orig = $cin;
+    $choice_out = "";
+    $empty = 0;
+    @avail_wide = ("x.Zero", "x.One", "y.Zero", "y.One");
+    $ident = 0;
+    if ($GENCONSTANTS) {
+        push @avail_wide, @constants;
+    }
+    my $name = sprintf("s_%06d", $number);
     push @funcs, $name;
     $CPP .= "static KnownBits ${name}(const KnownBits &x, const KnownBits &y) {\n";
     $CPP .= "  llvm::outs() << \"${name}\";\n" if $DEBUG;
