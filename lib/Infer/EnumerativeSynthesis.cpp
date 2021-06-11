@@ -78,8 +78,8 @@ namespace {
   static cl::opt<bool> EnableDataflowPruning("souper-dataflow-pruning",
     cl::desc("Enable pruning based on dataflow analysis (default=false)"),
     cl::init(false));
-  static cl::opt<bool> SynthesisConstWithCegisLoop("souper-synthesis-const-with-cegis",
-    cl::desc("Synthesis constants with CEGIS (default=false)"),
+  static cl::opt<bool> SynthesizeConstWithCegisLoop("souper-synthesize-const-with-cegis",
+    cl::desc("Synthesize constants with CEGIS (default=true)"),
     cl::init(true));
   static cl::opt<bool> DoubleCheckWithAlive("souper-double-check",
     cl::desc("Double check synthesis result with alive (default=false)"),
@@ -619,7 +619,7 @@ std::error_code synthesizeWithAlive(SynthesisContext &SC, std::vector<Inst *> &R
         continue;
       }
     } else {
-      if (SynthesisConstWithCegisLoop) {
+      if (SynthesizeConstWithCegisLoop) {
         auto ConstMap = Verifier.synthesizeConstantsWithCegis(G, SC.IC);
         if (ConstMap.empty())
           continue;

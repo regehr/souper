@@ -77,10 +77,9 @@ long getCodeSize(Module &M, TargetMachine *TM) {
   object::ObjectFile *OF = ObjOrErr.get().get();  
   auto SecList = OF->sections();
   long Size = 0;
-  for (auto &S : SecList) {
+  for (auto &S : SecList)
     if (S.isText())
       Size += S.getSize();
-  }
   if (Size > 0)
     return Size;
   else
@@ -93,7 +92,7 @@ struct TargetInfo {
 
 std::vector<TargetInfo> Targets {
   { "x86_64", "skylake" },
-  { "aarch64", "apple-a12" },
+  { "aarch64", "apple-m1" },
 };
 
 bool Init = false;

@@ -1,5 +1,5 @@
 ; REQUIRES: synthesis, unsupported
-; RUN: %souper-check -infer-rhs -souper-use-alive -souper-synthesis-const-with-cegis %s > %t1
+; RUN: %souper-check -infer-rhs -souper-use-alive -souper-synthesize-const-with-cegis %s > %t1
 ; RUN: %FileCheck %s < %t1
 
 ; CHECK: mul 6:i32, %0
