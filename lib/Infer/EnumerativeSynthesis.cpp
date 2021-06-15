@@ -64,7 +64,7 @@ static const std::vector<Inst::Kind> TernaryOperators = {
 
 namespace {
   static cl::opt<unsigned> MaxNumInstructions("souper-enumerative-synthesis-max-instructions",
-    cl::desc("Maximum number of instructions to synthesize (default=0)."),
+    cl::desc("Maximum number of new instructions to synthesize (default=0)."),
     cl::init(0));
   static cl::opt<unsigned> MaxV("souper-enumerative-synthesis-max-verification-load",
     cl::desc("Maximum number of guesses verified at once (default=300)."),

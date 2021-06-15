@@ -92,7 +92,7 @@ struct TargetInfo {
 
 std::vector<TargetInfo> Targets {
   { "x86_64", "skylake" },
-  { "aarch64", "apple-m1" },
+  { "aarch64", "apple-a12" },
 };
 
 bool Init = false;
@@ -117,7 +117,7 @@ void getBackendCost(InstContext &IC, souper::Inst *I, BackendCost &BC) {
   optimizeModule(M);
 
   llvm::errs() << M;
-  
+
   BackendCost Cost;
   for (auto &T : Targets) {
     std::string Error;
@@ -127,10 +127,9 @@ void getBackendCost(InstContext &IC, souper::Inst *I, BackendCost &BC) {
       report_fatal_error("can't lookup target");
     }
 
-    auto Features = "";
     TargetOptions Opt;
     auto RM = Optional<Reloc::Model>();
-    auto TM = Target->createTargetMachine(T.Trip, T.CPU, Features, Opt, RM);
+    auto TM = Target->createTargetMachine(T.Trip, T.CPU, "", Opt, RM);
 
     Cost.C.push_back(getCodeSize(M, TM));
   }

@@ -54,6 +54,7 @@ my $MAX_INSNS = 1;
 my $TEST_PRUNING = 0;
 my $PRUNE = 0;
 my $UNIX = 0;
+my $COST_FUDGE = 0;
 
 GetOptions(
     "n=i" => \$NPROCS,
@@ -62,6 +63,7 @@ GetOptions(
     "prune" => \$PRUNE,
     "unix" => \$UNIX,
     "test-pruning" => \$TEST_PRUNING,
+    "cost-fudge=i" => \$COST_FUDGE,
     "separate-files" => \$SAVE_TEMPS,
     "souper-debug-level=i" => \$SOUPER_DEBUG,
     "max-insns=i" => \$MAX_INSNS,
@@ -81,6 +83,10 @@ if ($TEST_PRUNING) {
 $OPTS .= "-souper-double-check ";
 if ($PRUNE) {
     $OPTS .= "-souper-dataflow-pruning ";
+}
+if ($COST_FUDGE > 0) {
+    $OPTS .= "-souper-enumerative-synthesis-cost-fudge=${COST_FUDGE} ";
+    $OPTS .= "-souper-check-all-guesses ";
 }
 if ($UNIX) {
     $OPTS .= "-souper-external-cache-unix ";
