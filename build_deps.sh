@@ -26,7 +26,7 @@ hiredis_commit=667dbf536524ba3f28c1d964793db1055c5a64f2
 llvm_repo=https://github.com/llvm/llvm-project.git
 # llvm_commit specifies the git branch or hash to checkout to
 llvm_commit=llvmorg-13.0.0
-klee_repo=https://github.com/rsas/klee
+klee_repo=https://github.com/regehr/klee
 klee_branch=pure-bv-qf-llvm-7.0
 alive_commit=v2
 alive_repo=https://github.com/manasij7479/alive2.git
