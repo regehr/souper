@@ -90,6 +90,15 @@ static const bool DynamicProfileAll = true;
 static const bool DynamicProfileAll = false;
 #endif
 
+static void eliminateDeadCode(Function &F) {
+  FunctionPassManager FPM;
+  FPM.addPass(DCEPass());
+  FunctionAnalysisManager FAM;
+  FAM.registerPass([&] { return TargetLibraryAnalysis(); });
+  FAM.registerPass([&] { return PassInstrumentationAnalysis(); });
+  FPM.run(F, FAM);
+}
+
 struct SouperPass : public ModulePass {
   static char ID;
 
@@ -390,7 +399,7 @@ public:
         }
       }
 
-      eliminateDeadCode(*F, TLI);
+      eliminateDeadCode(*F);
 
       if (DebugLevel > 2) {
         if (DebugLevel > 4) {
