@@ -452,12 +452,13 @@ public:
 
 };
 
-char SouperPass::ID = 0;
 }
 
 namespace llvm {
 void initializeSouperPassPass(llvm::PassRegistry &);
 }
+
+char SouperPass::ID = 0;
 
 INITIALIZE_PASS_BEGIN(SouperPass, "souper", "Souper super-optimizer pass",
                       false, false)
@@ -470,11 +471,7 @@ INITIALIZE_PASS_DEPENDENCY(ScalarEvolutionWrapperPass)
 INITIALIZE_PASS_END(SouperPass, "souper", "Souper super-optimizer pass", false,
                     false)
 
-static struct Register {
-  Register() {
-    initializeSouperPassPass(*llvm::PassRegistry::getPassRegistry());
-  }
-} X;
+static RegisterPass<SouperPass> X("souper", "Souper super-optimizer pass", false, false);
 
 static void registerSouperPass(
     const llvm::PassManagerBuilder &Builder, llvm::legacy::PassManagerBase &PM) {
