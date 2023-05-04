@@ -42,6 +42,7 @@ Options:
   -test-pruning             compare synthesis results with and without dataflow pruning
   -prune                    enable dataflow pruning
   -unix			    talk to Redis using UNIX domain sockets
+  -ignore-tag               ignore tags and run infer for every LHS that lacks a RHS
 END
     exit -1;
 }
@@ -54,11 +55,13 @@ my $MAX_INSNS = 1;
 my $TEST_PRUNING = 0;
 my $PRUNE = 0;
 my $UNIX = 0;
+my $IGNORE_TAG = 0;
 
 GetOptions(
     "n=i" => \$NPROCS,
     "tag=s" => \$tag,
     "verbose" => \$VERBOSE,
+    "ignore-tag" => \$IGNORE_TAG,
     "prune" => \$PRUNE,
     "unix" => \$UNIX,
     "test-pruning" => \$TEST_PRUNING,
@@ -260,9 +263,14 @@ sub byrank {
 foreach my $k (sort byrank @keys) {
     status() if $VERBOSE;
     my $result = $r->hget($k, "cache-infer-tag");
-    if (defined $result && $result eq $tag) {
-        $skip++;
-        next;
+    my $rhs = $r->hget($k, "rhs");
+    if ($IGNORE_TAG) {
+        next if (defined($rhs));
+    } else {
+        if (defined $result && $result eq $tag) {
+            $skip++;
+            next;
+        }
     }
     wait_for_one() unless $num_running < $NPROCS;
     die unless $num_running < $NPROCS;
